@@ -1,3 +1,4 @@
+// ./public/createaccount
 
 function CreateAccount(){
   const [show, setShow]         = React.useState(true);
@@ -7,29 +8,68 @@ function CreateAccount(){
   const [password, setPassword] = React.useState('');
   const ctx = React.useContext(UserContext);  
 
-  function validate(field, label){
-      if (!field) {
-        setStatus('Error: ' + label);
-        setTimeout(() => setStatus(''),3000);
-        return false;
-      }
-      return true;
-  }
+  // function validate(field, label){
+  //     if (!field) {
+  //       setStatus('Error: ' + label);
+  //       setTimeout(() => setStatus(''),3000);
+  //       return false;
+  //     }
+  //     return true;
+  // }
 
-  function handleCreate(){
-  console.log(name,email,password);
-  if (!validate(name,     'name'))     return;
-  if (!validate(email,    'email'))    return;
-  if (!validate(password, 'password')) return;
-
-  dal.create(name, email, password) // Call the `create` function in `dal.js`
-    .then(user => {
-      console.log(user);
-      setShow(false);
-    });
-}
-
-
+  // Mongodb Atlas connect
+  const mongoString = process.env.DATABASE_URL;
+  mongoose.connect(mongoString, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB:', err);
+  });
+  
+  // Create user account
+  app.get('/account/create/:name/:email/:password', function (req, res) {
+    dal.create(req.params.name, req.params.email, req.params.password).
+      then((user) => {
+          console.log(user);
+          res.send(user);
+      })
+  });
+  
+  // Login user
+  app.get('/account/login/:email/:password', function (req, res) {
+      res.send({
+          email:      req.params.email,
+          password:   req.params.password 
+      });   
+  });
+  
+  // All accounts
+  app.get('/account/all', function (req, res) {
+    dal.all().
+      then((docs) => {
+          console.log(docs);
+          res.send(docs);
+      })
+  });
+  
+  // Update user account balance
+  app.post('/account/update/:email/:amount', async (req, res) => {
+    try {
+      const { email, amount } = req.params;
+      const updatedUser = await dal.update(email, amount);
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+  
+  // Set up server
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+  
 
   function clearForm(){
     setName('');

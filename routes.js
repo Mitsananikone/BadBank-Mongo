@@ -1,14 +1,11 @@
-// ./routes.js
+const dal = require('./dal.js');
+const router = require('react-dom');
 
-const express = require('express');
-const router = express.Router();
-const dal = require('./public/dal.js');
-const User = require('./model.js');
-
+const router = require('./public/createaccount.js')
 // Post Method - Create user account
 router.post('/account/create/:name/:email/:password', async (req, res) => {
   try {
-    const user = await dal.create(req.params.name, req.params.email, req.params.password, User);
+    const user = await dal.create(req.params.name, req.params.email, req.params.password);
     res.status(200).json(user);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -18,7 +15,7 @@ router.post('/account/create/:name/:email/:password', async (req, res) => {
 // Get Method - All accounts
 router.get('/account/all', async (req, res) => {
   try {
-    const users = await dal.all(User);
+    const users = await dal.all();
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -28,7 +25,7 @@ router.get('/account/all', async (req, res) => {
 // Get Method - Login user
 router.get('/account/login/:email/:password', async (req, res) => {
   try {
-    const user = await dal.findOne(req.params.email, User);
+    const user = await dal.findOne(req.params.email);
     if (user && user.password === req.params.password) {
       res.json(user);
     } else {
@@ -43,11 +40,9 @@ router.get('/account/login/:email/:password', async (req, res) => {
 router.post('/account/update/:email/:amount', async (req, res) => {
   try {
     const { email, amount } = req.params;
-    const updatedUser = await dal.update(email, amount, User);
+    const updatedUser = await dal.update(email, amount);
     res.status(200).json(updatedUser);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
-
-module.exports = router;

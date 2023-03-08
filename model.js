@@ -23,3 +23,4 @@ const dataSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Users', dataSchema);
+
